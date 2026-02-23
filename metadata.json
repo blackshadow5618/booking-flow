@@ -1,0 +1,5 @@
+{
+  "name": "BookFlow SaaS",
+  "description": "Professional booking automation system with multi-service support, Stripe payments, and Google Calendar sync.",
+  "requestFramePermissions": []
+}

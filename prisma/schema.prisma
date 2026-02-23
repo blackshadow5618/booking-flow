@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String?
+  role          String    @default("USER") // ADMIN, USER
+  bookings      Booking[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Google Calendar Integration
+  googleAccessToken  String?
+  googleRefreshToken String?
+  googleTokenExpiry  DateTime?
+}
+
+model Service {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  duration    Int       // in minutes
+  price       Float
+  active      Boolean   @default(true)
+  bookings    Booking[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  startTime       DateTime
+  endTime         DateTime
+  status          String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  
+  serviceId       String
+  service         Service  @relation(fields: [serviceId], references: [id])
+  
+  stripeSessionId String?  @unique
+  paymentStatus   String   @default("UNPAID") // UNPAID, PAID, REFUNDED
+  
+  googleEventId   String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([startTime])
+  @@index([userId])
+}
+
+model Availability {
+  id        String   @id @default(cuid())
+  dayOfWeek Int      // 0-6 (Sunday-Saturday)
+  startTime String   // "09:00"
+  endTime   String   // "17:00"
+  active    Boolean  @default(true)
+}
